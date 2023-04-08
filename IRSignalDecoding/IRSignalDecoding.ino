@@ -1,4 +1,4 @@
-// Bibliotecas utilizadas para decodificação de sinais
+// Libraries used for signal decoding
 #include <IRrecv.h>
 #include <IRsend.h>
 #include <Arduino.h>
@@ -21,17 +21,18 @@
 #include <ir_Vestel.h>
 #include <ir_Whirlpool.h>
 
-// Configurações de hardware e tempo
-const uint16_t kRecvPin = 14; // D5; pino no qual o receptor infravermelho está conectado.
-const uint32_t kBaudRate = 115200; // taxa de transmissão de dados em bits por segundo (baud rate) para a comunicação serial.
-const uint16_t kCaptureBufferSize = 1024; // O tamanho do buffer de captura, que é o número máximo de marcas e espaços que serão armazenados durante a recepção de um sinal IR.
-const uint8_t kTimeout = 15; // pode ser redefinido para evitar repetições de leitura
-const uint16_t kMinUnknownSize = 12; // tamanho mínimo dos dados recebidos
+// Hardware and time settings
+const uint16_t kRecvPin = 14; // D5; pin to which the infrared receiver is connected.
+const uint32_t kBaudRate = 115200; // data transmission rate in bits per second (baud rate) for serial communication.
+const uint16_t kCaptureBufferSize = 1024; // The size of the capture buffer, which is the maximum number of marks and spaces that will be stored during the reception of an IR signal.
+const uint8_t kTimeout = 15; // time to receive data; can be redefined to avoid reading repetitions
+const uint16_t kMinUnknownSize = 12; // minimum received data size
 
-// Configurações de hardware para envio de sinal IR
+// Hardware settings for sending the IR signal
 const uint16_t kIrLed = 4;  // ESP8266 GPIO pin to use. Recommended: 4 (D2).
 IRsend irsend(kIrLed);  // Set the GPIO to be used to sending the message.
 
+// Configuration for IR signal handling
 String rawDataString;
 int rawDataInt;
 int rawDataIntOn;
@@ -40,12 +41,12 @@ int cont = 0;
 uint16_t rawDataOn[] = {atoi(rawDataString.c_str())};
 uint16_t rawDataOff[] = {atoi(rawDataString.c_str())};
 
-// Cria objeto IRrecv e decode_results
+// Create IRrecv object and decode_results
 IRrecv irrecv(kRecvPin, kCaptureBufferSize, kTimeout, true);
 decode_results decodedSignal;
 String description = "";
 
-// Função para decodificar sinais do ar condicionado da marca Daikin
+// Function to decode signals from Daikin air conditioners
 void decodeDaikin(decode_results *decodedSignal) {
   #if DECODE_DAIKIN
   if (decodedSignal->decode_type == DAIKIN) { // colocar isso no loop e chamar a função caso seja vdd
@@ -64,7 +65,7 @@ void decodeDaikin(decode_results *decodedSignal) {
   #endif  // DECODE_DAIKIN2
 }
 
-// Função para decodificar sinais do ar condicionado da marca Fujitsu
+// Function to decode signals from Fujitsu air conditioners
 void decodeFujitsu(decode_results *decodedSignal){
   #if DECODE_FUJITSU_AC
   if (decodedSignal->decode_type == FUJITSU_AC){
@@ -75,7 +76,7 @@ void decodeFujitsu(decode_results *decodedSignal){
   #endif // DECODE_FUJITSU_AC
 }
 
-// Função para decodificar sinais do ar condicionado da marca TOSHIBA
+// Function to decode signals from TOSHIBA air conditioners
 void decodeToshiba(decode_results *decodedSignal){
   #if DECODE_TOSHIBA_AC
   if (decodedSignal->decode_type == TOSHIBA_AC){
@@ -86,6 +87,7 @@ void decodeToshiba(decode_results *decodedSignal){
   #endif // DECODE_TOSHIBA_AC
 }
 
+//Function to handle the IR signal
 String treatSignal(String originalRawData){
   int startIndex = originalRawData.indexOf("{");
   int endIndex = originalRawData.indexOf("}");
@@ -93,6 +95,7 @@ String treatSignal(String originalRawData){
   return rawDataString;
 }
 
+//Function to handle the number of blocks of the IR signal
 int treatSignalNumber(String originalRawData){
   int startIndexNumber = originalRawData.indexOf("[");
   int endIndexNumber = originalRawData.indexOf("]");
@@ -101,60 +104,62 @@ int treatSignalNumber(String originalRawData){
   return rawDataInt;
 }
 
-// Função principal
+// Main function
 void setup() {
   Serial.begin(kBaudRate);
-  irrecv.enableIRIn(); // Inicia recepção de sinais IR
+  irrecv.enableIRIn(); // Starts IR signal reception
   #if DECODE_HASH
-    irrecv.setUnknownThreshold(kMinUnknownSize); // Ignorar mensagens com menos do que o mínimo de pulsos ligados ou desligados.
+    irrecv.setUnknownThreshold(kMinUnknownSize); // Ignore messages with less than the minimum on or off pulses.
   #endif // DECODE_HASH
-    irrecv.enableIRIn(); // Inicia recepção de sinais IR 
-  irsend.begin();
+    irrecv.enableIRIn(); // Starts IR signal reception 
+  irsend.begin(); // Start IR signal emitter
 }
 
 void loop() {
-  if (irrecv.decode(&decodedSignal)) { // Se um sinal IR foi recebido
+  if (irrecv.decode(&decodedSignal)) { // If an IR signal has been received
     cont += 1;
-    switch (decodedSignal.decode_type) { // Verifica o tipo de sinal recebido
+    switch (decodedSignal.decode_type) { // Checks the type of received signal
       case DAIKIN:
       case DAIKIN2:
-        decodeDaikin(&decodedSignal); // Chama função para decodificar sinal da Daikin
-        yield(); // evita que o programa trave ou reinicie
+        decodeDaikin(&decodedSignal); // Call function to decode Daikin signal
+        yield(); // prevents the program from crashing or restarting
       break;
       case FUJITSU_AC:
-        decodeFujitsu(&decodedSignal); // Chama função para decodificar sinal da Fujitsu
-        yield(); // evita que o programa trave ou reinicie
+        decodeFujitsu(&decodedSignal); // Call function to decode Fujitsu signal
+        yield(); // prevents the program from crashing or restarting
       break;
     }
     if (description != "") Serial.println("Mesg Desc.: " + description);
     Serial.println(resultToSourceCode(&decodedSignal));
-    yield(); // evita que o programa trave ou reinicie
+    yield();
     
-    //tratar o bloco do sinal
+    //tract the IR signal block
     rawDataString = treatSignal(resultToSourceCode(&decodedSignal));
     Serial.println(rawDataString);
 
-    //tratar a quantidade de blocos
+    //tract the number of blocks of the IR signal
     rawDataInt = treatSignalNumber(resultToSourceCode(&decodedSignal));
     Serial.println(rawDataInt);
 
+    // store processed IR signal (signal to power on device)
     if(cont == 1){
       rawDataIntOn = rawDataInt;
       rawDataOn[rawDataIntOn] = {atoi(rawDataString.c_str())};
     }
 
+    // store treated IR signal (signal to turn off device)
     if(cont == 2){
       rawDataIntOff = rawDataInt;
       rawDataOff[rawDataIntOff] = {atoi(rawDataString.c_str())};
     }
     
-    irrecv.resume(); // Prepara o receptor para receber o próximo sinal
+    irrecv.resume(); // Prepares the receiver to receive the next signal
   }
   
   if(Serial.available() > 0){
     int comando = Serial.read();
     if (comando == '1'){
-      //sinal decodificado e armazenado
+      // sending the decoded and stored signal
       irsend.sendRaw(rawDataOn, rawDataIntOn, 38);  // Send a raw data capture at 38kHz.
       delay(2000);
     }
