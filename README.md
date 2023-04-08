@@ -10,7 +10,7 @@ O Sistema de Controle de Ar-Condicionado é uma solução IoT desenvolvida por [
 
 ## Visão geral
 
-Na IFRN, gerenciar (ligar/desligar) os aparelhos de ar-condicionado é uma tarefa manual e demorada devido a quantidade de salas e aparelhos. Este projeto visa automatizar e simplificar o processo, fornecendo uma interface administrativa para controlar os aparelhos remotamente. Este microserviço IoT implantado ao aparelho de ar-condicionado por meio do `ESP8266` se comunica com o back-end através do protocolo MQTT e este, por sua vez, com o aplicativo front-end a fim de fornecer um controle e gerenciamento dos dispositivos.
+No IFRN, gerenciar (ligar/desligar) os aparelhos de ar-condicionado é uma tarefa manual e demorada devido a quantidade de salas e aparelhos. Este projeto visa automatizar e simplificar o processo, fornecendo uma interface administrativa para controlar os aparelhos remotamente. Este microserviço IoT implantado ao aparelho de ar-condicionado por meio do `ESP8266` se comunica com o back-end através do protocolo MQTT e este, por sua vez, com o aplicativo front-end a fim de fornecer um controle e gerenciamento dos dispositivos.
 
 ## Tecnologias
 
