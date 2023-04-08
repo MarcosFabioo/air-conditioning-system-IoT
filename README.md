@@ -10,7 +10,7 @@ O Sistema de Controle de Ar-Condicionado é uma solução IoT desenvolvida por [
 
 ## Visão geral
 
-No IFRN, gerenciar (ligar/desligar) os aparelhos de ar-condicionado é uma tarefa manual e demorada devido a quantidade de salas e aparelhos. Este projeto visa automatizar e simplificar o processo, fornecendo uma interface administrativa para controlar os aparelhos remotamente. Este microserviço IoT implantado ao aparelho de ar-condicionado por meio do `ESP8266` se comunica com o back-end através do protocolo MQTT e este, por sua vez, com o aplicativo front-end a fim de fornecer um controle e gerenciamento dos dispositivos.
+No IFRN, gerenciar (ligar/desligar) os aparelhos de ar-condicionado é uma tarefa manual e demorada devido a quantidade de salas e aparelhos. Este projeto visa automatizar e simplificar o processo, fornecendo uma interface administrativa para controlar os aparelhos remotamente. Este microserviço IoT, implantado ao aparelho de ar-condicionado por meio do `ESP8266`, se comunica com o back-end através do protocolo MQTT e este, por sua vez, com o aplicativo front-end a fim de fornecer um controle e gerenciamento dos dispositivos.
 
 ## Tecnologias
 
@@ -26,7 +26,7 @@ No IFRN, gerenciar (ligar/desligar) os aparelhos de ar-condicionado é uma taref
 
 - **IRremoteESP8266.h e IRutils.h:** bibliotecas para controle de dispositivos IR utilizando o chip ESP8266.
 
-- **Bibliotecas para controle de diversos modelos de ar condicionado**, como ir_Coolix.h, ir_Daikin.h, ir_Fujitsu.h, ir_Gree.h, ir_Haier.h, ir_Hitachi.h, ir_Kelvinator.h, ir_Midea.h, ir_Mitsubishi.h, ir_Panasonic.h, ir_Samsung.h, ir_Tcl.h, ir_Teco.h, ir_Toshiba.h, ir_Vestel.h e ir_Whirlpool.h.
+- **Bibliotecas para controle de diversos modelos de ar condicionado:** ir_Coolix.h, ir_Daikin.h, ir_Fujitsu.h, ir_Gree.h, ir_Haier.h, ir_Hitachi.h, ir_Kelvinator.h, ir_Midea.h, ir_Mitsubishi.h, ir_Panasonic.h, ir_Samsung.h, ir_Tcl.h, ir_Teco.h, ir_Toshiba.h, ir_Vestel.h e ir_Whirlpool.h.
 
 - **Linguagem de programação C++:** é a linguagem utilizada para escrever o código-fonte do programa.
 
@@ -38,6 +38,6 @@ No IFRN, gerenciar (ligar/desligar) os aparelhos de ar-condicionado é uma taref
 
 - **Conexão MQTT:** envio e recebimento de mensagens por meio do protocolo MQTT.
 
-- **Manipulação de sinais infravermelhos (IR):** recebimento, decodificação e utilização de sinais infravermelhos (IR) de diferentes marcas de ar condicionado.
+- **Manipulação de sinais infravermelhos (IR):** recebimento, decodificação e reutilização de sinais infravermelhos (IR) de diferentes marcas de ar condicionado.
 
 - **Controle remoto dos aparelhos de ar-condicionado:** Ligar e desligar os aparelhos de ar-condicionado remotamente usando o protocolo MQTT. 
