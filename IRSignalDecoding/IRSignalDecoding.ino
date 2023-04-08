@@ -157,14 +157,14 @@ void loop() {
   }
   
   if(Serial.available() > 0){
-    int comando = Serial.read();
-    if (comando == '1'){
+    int command = Serial.read();
+    if (command == '1'){
       // sending the decoded and stored signal
       irsend.sendRaw(rawDataOn, rawDataIntOn, 38);  // Send a raw data capture at 38kHz.
       delay(2000);
     }
     
-    if (comando == '0'){
+    if (command == '0'){
       irsend.sendRaw(rawDataOff, rawDataIntOff, 38);
       delay(2000);
     }
