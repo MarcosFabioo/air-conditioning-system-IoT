@@ -34,7 +34,7 @@ No IFRN, gerenciar (ligar/desligar) os aparelhos de ar-condicionado é uma taref
 
 ## Funcionalidades
 
-- **conexão com rede Wi-Fi:** a conexão Wi-Fi é estabelecida e configurada para utilizar o protocolo STA (Station mode).
+- **Conexão com rede Wi-Fi:** a conexão Wi-Fi é estabelecida e configurada para utilizar o protocolo STA (Station mode).
 
 - **Conexão MQTT:** envio e recebimento de mensagens por meio do protocolo MQTT.
 
