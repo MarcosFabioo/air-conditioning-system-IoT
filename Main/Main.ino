@@ -3,22 +3,9 @@
 #include <Arduino.h>
 #include <IRremoteESP8266.h>
 #include <IRutils.h>
-#include <ir_Coolix.h>
 #include <ir_Daikin.h>
 #include <ir_Fujitsu.h>
-#include <ir_Gree.h>
-#include <ir_Haier.h>
-#include <ir_Hitachi.h>
-#include <ir_Kelvinator.h>
-#include <ir_Midea.h>
-#include <ir_Mitsubishi.h>
-#include <ir_Panasonic.h>
-#include <ir_Samsung.h>
-#include <ir_Tcl.h>
-#include <ir_Teco.h>
 #include <ir_Toshiba.h>
-#include <ir_Vestel.h>
-#include <ir_Whirlpool.h>
 
 // Hardware and time settings
 const uint16_t kRecvPin = 14;             // D5; pin to which the infrared receiver is connected.
@@ -34,7 +21,7 @@ IRsend irsend(kIrLed);     // Set the GPIO to be used to sending the message.
 // Configuration for IR signal handling
 bool isTurnedOn = false;
 int decodingCounter = 0;
-const MAX_DECODING_COUNTER = 2;
+int MAX_DECODING_COUNTER = 2;
 
 // Classe para armazenar o rawData e o rawDataLength do sinal recebido
 struct IRData
@@ -43,9 +30,12 @@ struct IRData
   uint16_t rawDataLength;
 };
 
+IRData turnOffSignal;
+IRData turnOnSignal;
+
 // Comandos recebidos para ligar e desligar o ar condicionado
-const string TURN_ON_COMMAND = "1";
-const string TURN_OFF_COMMAND = "0";
+int TURN_ON_COMMAND = 1;
+int TURN_OFF_COMMAND = 0;
 
 // Create IRrecv object and decode_results
 IRrecv irrecv(kRecvPin, kCaptureBufferSize, kTimeout, true);
@@ -137,14 +127,12 @@ void loop()
       if (isTurnedOn)
       {
         Serial.println("Sinal de desligar decodificado!");
-        IRData turnOffSignal;
         turnOffSignal.rawData = resultToRawArray(&currentDecodedSignal);
         turnOffSignal.rawDataLength = getCorrectedRawLength(&currentDecodedSignal);
       }
       else
       {
         Serial.println("Sinal de ligar decodificado!");
-        IRData turnOnSignal;
         turnOnSignal.rawData = resultToRawArray(&currentDecodedSignal);
         turnOnSignal.rawDataLength = getCorrectedRawLength(&currentDecodedSignal);
       }
@@ -154,7 +142,7 @@ void loop()
     }
     else
     {
-      Serial.println("Recebi um sinal, mas não vou decodificar porque excedi o número máximo de decodificações permitidas.")
+      Serial.println("Recebi um sinal, mas não vou decodificar porque excedi o número máximo de decodificações permitidas.");
     }
     irrecv.resume();
   }
@@ -166,15 +154,15 @@ void loop()
 
     if (readCommand == TURN_ON_COMMAND)
     {
-      irsend.sendRaw(rawDataOn, rawDataLengthOn, 38);
+      irsend.sendRaw(turnOnSignal.rawData, turnOnSignal.rawDataLength, 38);
       Serial.println("Ligando o ar-condicionado...");
-      Serial.println(resultToSourceCode(&decodedTurnOnSignal));
+      //Serial.println(resultToSourceCode(&turnOnSignal));
     }
     else if (readCommand == TURN_OFF_COMMAND)
     {
-      irsend.sendRaw(rawDataOff, rawDataLengthOff, 38);
+      irsend.sendRaw(turnOffSignal.rawData, turnOffSignal.rawDataLength, 38);
       Serial.println("Desligando o ar-condicionado...");
-      Serial.println(resultToSourceCode(&decodedTurnOffSignal));
+      //Serial.println(resultToSourceCode(&turnOffSignal));
     }
     delay(2000);
   }
