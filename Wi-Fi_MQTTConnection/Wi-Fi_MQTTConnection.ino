@@ -85,7 +85,7 @@ void reconnect(){                                // Function attempts to establi
       client.publish("esp/status", (byte*)message, length, retained);
 
       // Subscribe to the "room/12/air-conditioner/1/state" topic
-      client.subscribe("room/12/air-conditioner/1/state");
+      client.subscribe("air-conditioner/4/state");
       
     } else {
       // If a connection cannot be established, print the error message and delay for 5 seconds before trying again

@@ -9,8 +9,8 @@
 #include <ir_Fujitsu.h>
 #include <ir_Toshiba.h>
 
-const char* nameWifi = "Marcos_NET";                // Wi-Fi network name
-const char* password = "05102202";                 // Wi-Fi network password
+const char* nameWifi = "Maconaria";                // Wi-Fi network name
+const char* password = "loja1979";                 // Wi-Fi network password
 
 const char* server_MQTT = "broker.hivemq.com"; // MQTT server address
 
@@ -44,8 +44,8 @@ IRData turnOffSignal;
 IRData turnOnSignal;
 
 // Comandos recebidos para ligar e desligar o ar condicionado
-int TURN_ON_COMMAND = 1;
-int TURN_OFF_COMMAND = 0;
+char TURN_ON_COMMAND = '1';
+char TURN_OFF_COMMAND = '0';
 
 // Create IRrecv object and decode_results
 IRrecv irrecv(kRecvPin, kCaptureBufferSize, kTimeout, true);
@@ -99,13 +99,9 @@ void decodeToshiba(decode_results *decodedSignal)
 #endif // DECODE_TOSHIBA_AC
 }
 
-void receiveDecodeSignals(){
-  decode_results currentDecodedSignal;
-
-  if (irrecv.decode(&currentDecodedSignal))
-  { // If an IR signal has been received
-    switch (currentDecodedSignal.decode_type)
-    { // Checks the type of received signal
+void receiveDecodeSignals(decode_results currentDecodedSignal){
+  switch (currentDecodedSignal.decode_type)
+  { // Checks the type of received signal
     case DAIKIN:
     case DAIKIN2:
       decodeDaikin(&currentDecodedSignal); // Call function to decode Daikin signal
@@ -115,28 +111,28 @@ void receiveDecodeSignals(){
       decodeFujitsu(&currentDecodedSignal); // Call function to decode Fujitsu signal
       yield();                              // prevents the program from crashing or restarting
       break;
-    }
-    if (description != "")
-      Serial.println("Mesg Desc.: " + description);
-    Serial.println(resultToSourceCode(&currentDecodedSignal));
-    yield();
+  }
+  if (description != ""){
+    Serial.println("Mesg Desc.: " + description); 
+  }
+  Serial.println(resultToSourceCode(&currentDecodedSignal));
+  yield();
+  
+  if (isTurnedOn)
+  {
+    Serial.println("Sinal de desligar decodificado!");
+    turnOffSignal.rawData = resultToRawArray(&currentDecodedSignal);
+    turnOffSignal.rawDataLength = getCorrectedRawLength(&currentDecodedSignal);
+  }
+  else
+  {
+    Serial.println("Sinal de ligar decodificado!");
+    turnOnSignal.rawData = resultToRawArray(&currentDecodedSignal);
+    turnOnSignal.rawDataLength = getCorrectedRawLength(&currentDecodedSignal);
+  }
 
-    if (isTurnedOn)
-      {
-        Serial.println("Sinal de desligar decodificado!");
-        turnOffSignal.rawData = resultToRawArray(&currentDecodedSignal);
-        turnOffSignal.rawDataLength = getCorrectedRawLength(&currentDecodedSignal);
-      }
-      else
-      {
-        Serial.println("Sinal de ligar decodificado!");
-        turnOnSignal.rawData = resultToRawArray(&currentDecodedSignal);
-        turnOnSignal.rawDataLength = getCorrectedRawLength(&currentDecodedSignal);
-      }
-
-      isTurnedOn = !isTurnedOn; // inverte o valor da variável
-   irrecv.resume();
-  } 
+  isTurnedOn = !isTurnedOn; // inverte o valor da variável
+  irrecv.resume(); 
 }
 
 void setup() {
@@ -151,14 +147,6 @@ void setup() {
   #endif                                         // DECODE_HASH
   irrecv.enableIRIn();                         // Starts IR signal reception
   irsend.begin();                              // Start IR signal emitter
-
-  while (decodingCounter < MAX_DECODING_COUNTER){
-    Serial.println("Sistema pronto para receber o sinal IR!");
-    receiveDecodeSignals(); 
-    decodingCounter++;
-  }
-
-  irrecv.disableIRIn();
 }
 
 void loop() { 
@@ -166,6 +154,11 @@ void loop() {
     reconnect();                                 // If not connected, calls the reconnect() function to connect again
   }
   client.loop();                                 // Loops the MQTT client
+  decode_results currentDecodedSignal;
+  if (irrecv.decode(&currentDecodedSignal) && decodingCounter < MAX_DECODING_COUNTER){
+    receiveDecodeSignals(currentDecodedSignal); 
+    decodingCounter++; 
+  }
 }
 
 void connect_WiFi(){
@@ -198,14 +191,16 @@ void callback(char* topic, byte* payload, unsigned int length){
   Serial.println();
 
   // Check if the payload's first character is '1'. If it is, turn the built-in LED on, otherwise turn it off.
-  if((int)payload[0] == TURN_ON_COMMAND)
+  if((char)payload[0] == TURN_ON_COMMAND)
   {
+    irrecv.disableIRIn();
     irsend.sendRaw(turnOnSignal.rawData, turnOnSignal.rawDataLength, 38);
     Serial.println("Ligando o ar-condicionado...");
     //Serial.println(resultToSourceCode(&turnOnSignal));
   } 
-  else if ((int)payload[0] == TURN_OFF_COMMAND)
+  else if ((char)payload[0] == TURN_OFF_COMMAND)
   {
+    irrecv.disableIRIn();
     irsend.sendRaw(turnOffSignal.rawData, turnOffSignal.rawDataLength, 38);
     Serial.println("Desligando o ar-condicionado...");
     //Serial.println(resultToSourceCode(&turnOffSignal));

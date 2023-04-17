@@ -150,15 +150,15 @@ void loop()
   if (Serial.available() > 0)
   {
     irrecv.disableIRIn();
-    int readCommand = Serial.read();
+    char readCommand = Serial.read();
 
-    if (readCommand == TURN_ON_COMMAND)
+    if (readCommand == '1')
     {
       irsend.sendRaw(turnOnSignal.rawData, turnOnSignal.rawDataLength, 38);
       Serial.println("Ligando o ar-condicionado...");
       //Serial.println(resultToSourceCode(&turnOnSignal));
     }
-    else if (readCommand == TURN_OFF_COMMAND)
+    else if (readCommand == '0')
     {
       irsend.sendRaw(turnOffSignal.rawData, turnOffSignal.rawDataLength, 38);
       Serial.println("Desligando o ar-condicionado...");
