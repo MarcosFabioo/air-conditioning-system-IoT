@@ -96,10 +96,10 @@ void callback(char* topic, byte* payload, unsigned int length) {
   irrecv.disableIRIn();
 
   if (command == TURN_ON_COMMAND) {
-    turnOnSignal();
+    turnOnAirConditionerSignal();
     Serial.println("Ligando o ar-condicionado...");
   } else if (command == TURN_OFF_COMMAND) {
-    turnOffSignal();
+    turnOffAirConditionerSignal();
     Serial.println("Desligando o ar-condicionado...");
   }
 }
@@ -177,11 +177,11 @@ void reconnect() {
 }
 
 // Signal management methods
-void turnOnSignal() {
+void turnOnAirConditionerSignal() {
   irsend.sendRaw(turnOnSignal.rawData, turnOnSignal.rawDataLength, 38);
 }
 
-void turnOffSignal() {
+void turnOffAirConditionerSignal() {
   irsend.sendRaw(turnOffSignal.rawData, turnOffSignal.rawDataLength, 38);
 }
 
