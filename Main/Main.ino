@@ -9,8 +9,8 @@
 #include <ir_Fujitsu.h>
 #include <ir_Toshiba.h>
 
-const char* WIFI_SSID = "Marcos_NET";
-const char* WIFI_PASSWORD = "05102202";
+const char* WIFI_SSID = "Ruan";
+const char* WIFI_PASSWORD = "123456789";
 
 const char* SERVER_MQTT = "broker.hivemq.com";
 const char* SUBSCRIBED_TOPIC = "air-conditioner/1/state";
@@ -124,15 +124,15 @@ void setupSignalsDecoding() {
 }
 
 void setTurnOnSignal(decode_results currentDecodedSignal) {
-  Serial.println("Sinal de desligar decodificado!");
-  turnOffSignal.rawData = resultToRawArray(&currentDecodedSignal);
-  turnOffSignal.rawDataLength = getCorrectedRawLength(&currentDecodedSignal);
-}
-
-void setTurnOffSignal(decode_results currentDecodedSignal) {
   Serial.println("Sinal de ligar decodificado!");
   turnOnSignal.rawData = resultToRawArray(&currentDecodedSignal);
   turnOnSignal.rawDataLength = getCorrectedRawLength(&currentDecodedSignal);
+}
+
+void setTurnOffSignal(decode_results currentDecodedSignal) {
+  Serial.println("Sinal de desligar decodificado!");
+  turnOffSignal.rawData = resultToRawArray(&currentDecodedSignal);
+  turnOffSignal.rawDataLength = getCorrectedRawLength(&currentDecodedSignal);
 }
 
 void connectToWiFi() {
