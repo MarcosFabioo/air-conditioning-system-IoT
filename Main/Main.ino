@@ -9,11 +9,11 @@
 #include <ir_Fujitsu.h>
 #include <ir_Toshiba.h>
 
-const char* WIFI_SSID = "Maconaria";
-const char* WIFI_PASSWORD = "loja1979";
+const char* WIFI_SSID = "Marcos_NET";
+const char* WIFI_PASSWORD = "05102202";
 
 const char* SERVER_MQTT = "broker.hivemq.com";
-const char* SUBSCRIBED_TOPIC = "air-conditioner/0/state";
+const char* SUBSCRIBED_TOPIC = "air-conditioner/1/state";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
