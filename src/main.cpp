@@ -3,7 +3,7 @@
 #include <PubSubClient.h>
 #include "WifiManager/WifiManager.h"
 #include "SinalIRManager/SinalIRManager.h"
-#include "PinConstants/PinConstants.h"
+#include "PinConstants/PinConstants.cpp"
 
 WifiManager wifiManager;
 SinalIRManager sinalIRManager;
@@ -71,7 +71,8 @@ void callback(char *topic, byte *payload, unsigned int length)
 {
   displayMessageReceived(topic, payload, length);
   char command = (char)payload[0];
-  irrecv.disableIRIn();
+
+  sinalIRManager.getIrrecvInstance().disableIRIn();
 
   if (command == TURN_ON_COMMAND)
   {
@@ -101,7 +102,7 @@ void loop()
   client.loop();
 
   decode_results currentDecodedSignal;
-  if (irrecv.decode(&currentDecodedSignal) &&
+  if (sinalIRManager.getIrrecvInstance().decode(&currentDecodedSignal) &&
       decodedSignalsTotal < MAX_DECODING_SIGNAL_ATTEMPTS)
   {
     sinalIRManager.receiveDecodeSignals(currentDecodedSignal);

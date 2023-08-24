@@ -1,3 +1,6 @@
+#ifndef PIN_CONSTANTS_H
+#define PIN_CONSTANTS_H
+
 #include <Arduino.h>
 
 namespace PinConstants
@@ -8,3 +11,5 @@ namespace PinConstants
   extern const uint8_t kTimeout;
   extern const uint16_t kMinUnknownSize;
 }
+
+#endif

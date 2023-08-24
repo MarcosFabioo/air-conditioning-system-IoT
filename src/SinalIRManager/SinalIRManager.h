@@ -1,6 +1,7 @@
 #ifndef SinalIRManager_h
 #define SinalIRManager_h
 
+#include <PinConstants/PinConstants.h>
 #include <Arduino.h>
 #include <IRrecv.h>
 #include <IRremoteESP8266.h>
@@ -8,14 +9,13 @@
 #include <IRutils.h>
 #include <ir_Daikin.h>
 #include <ir_Fujitsu.h>
-#include <PinConstants/PinConstants.h>
 
-const uint16_t kIrLed = 4;
-IRsend irsend(kIrLed);
-
-bool isTurnedOn = false;
-int decodedSignalsTotal = 0;
-const int MAX_DECODING_SIGNAL_ATTEMPTS = 2;
+// extern = palavra para declarar variáveis globais
+extern const uint16_t kIrLed;
+extern IRsend irsend;
+extern bool isTurnedOn;
+extern int decodedSignalsTotal;
+extern const int MAX_DECODING_SIGNAL_ATTEMPTS;
 
 struct IRData
 {
@@ -23,14 +23,14 @@ struct IRData
   uint16_t rawDataLength;
 };
 
-IRData turnOffSignal;
-IRData turnOnSignal;
+extern IRData turnOffSignal;
+extern IRData turnOnSignal;
 
-char TURN_ON_COMMAND = '1';
-char TURN_OFF_COMMAND = '0';
+extern char TURN_ON_COMMAND;
+extern char TURN_OFF_COMMAND;
 
-IRrecv irrecv(PinConstants::kRecvPin, PinConstants::kCaptureBufferSize, PinConstants::kTimeout, true);
-String description = "";
+extern IRrecv irrecv;
+extern String description;
 
 class SinalIRManager
 {
@@ -39,6 +39,7 @@ public:
   void turnOffAirConditionerSignal();
   void setupSignalsDecoding();
   void receiveDecodeSignals(decode_results currentDecodedSignal);
+  IRrecv &getIrrecvInstance();
 
 private:
   void setTurnOnSignal(decode_results currentDecodedSignal);
