@@ -1,5 +1,5 @@
-#ifndef SinalIRManager_h
-#define SinalIRManager_h
+#ifndef SINAL_IR_MANAGER_H
+#define SINAL_IR_MANAGER_H
 
 #include <PinConstants/PinConstants.h>
 #include <Arduino.h>
