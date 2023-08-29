@@ -12,8 +12,10 @@ const char *SERVER_MQTT = "broker.hivemq.com";
 const char *SUBSCRIBED_TOPIC_ACTION = "air-conditioner/1/state";
 const char *PUBLISH_TOPIC_TEMP = "air-conditioner/1/temp";
 
-const int DELAY_TO_TURN_ON_AIR_CONDITIONER = 60 * 1000; // 1 minute
-const int DELAY_TO_RETRY_CONNECTION = 5 * 1000;         // 5 seconds
+unsigned long lastAirConditionerTurnOnTime = 0;
+unsigned long lastConnectionRetryTime = 0;
+const unsigned long AIR_CONDITIONER_DELAY = 60000; // 1 minute
+const unsigned long CONNECTION_RETRY_DELAY = 5000; // 5 seconds
 
 char msgTemperature[1];
 float airConditionerTemperature;
@@ -70,7 +72,6 @@ void reconnect()
     else
     {
       displayMqttNotConnected();
-      delay(DELAY_TO_RETRY_CONNECTION);
     }
   }
 }
@@ -94,8 +95,8 @@ void callback(char *topic, byte *payload, unsigned int length)
   if (command == TURN_ON_COMMAND)
   {
     sinalIRManager.turnOnAirConditionerSignal();
+    lastAirConditionerTurnOnTime = millis();
     Serial.println("Ligando o ar-condicionado...");
-    delay(DELAY_TO_TURN_ON_AIR_CONDITIONER);
 
     float airConditionerTemperature = getAirConditionerTemperature();
 
@@ -130,19 +131,29 @@ void setupMqtt()
 
 void loop()
 {
-
   if (!client.connected())
   {
-    reconnect();
+    unsigned long currentMillis = millis();
+
+    if (currentMillis - lastConnectionRetryTime >= CONNECTION_RETRY_DELAY)
+    {
+      lastConnectionRetryTime = currentMillis;
+      reconnect();
+    }
   }
+
   client.loop();
 
-  decode_results currentDecodedSignal;
-  if (sinalIRManager.getIrrecvInstance().decode(&currentDecodedSignal) &&
-      decodedSignalsTotal < MAX_DECODING_SIGNAL_ATTEMPTS)
+  unsigned long currentMillis = millis();
+  if (currentMillis - lastConnectionRetryTime >= AIR_CONDITIONER_DELAY)
   {
-    sinalIRManager.receiveDecodeSignals(currentDecodedSignal);
-    decodedSignalsTotal++;
+    decode_results currentDecodedSignal;
+    if (sinalIRManager.getIrrecvInstance().decode(&currentDecodedSignal) &&
+        decodedSignalsTotal < MAX_DECODING_SIGNAL_ATTEMPTS)
+    {
+      sinalIRManager.receiveDecodeSignals(currentDecodedSignal);
+      decodedSignalsTotal++;
+    }
   }
 }
 
