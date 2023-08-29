@@ -12,10 +12,13 @@ const char *SERVER_MQTT = "broker.hivemq.com";
 const char *SUBSCRIBED_TOPIC_ACTION = "air-conditioner/1/state";
 const char *PUBLISH_TOPIC_TEMP = "air-conditioner/1/temp";
 
-char msgTemperatura[1];
-float temperatura;
+const int DELAY_TO_TURN_ON_AIR_CONDITIONER = 60 * 1000; // 1 minute
+const int DELAY_TO_RETRY_CONNECTION = 5 * 1000;         // 5 seconds
+
+char msgTemperature[1];
+float airConditionerTemperature;
 boolean retained = true;
-float tempExterna = 30;
+float outsideTemperature = 30;
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -67,19 +70,17 @@ void reconnect()
     else
     {
       displayMqttNotConnected();
-      delay(5000);
+      delay(DELAY_TO_RETRY_CONNECTION);
     }
   }
 }
 
-void measureTemperature()
+float getAirConditionerTemperature()
 {
-  int valorObtido = analogRead(A0);
-  float milivolts = (valorObtido/1024.0) * 3300; 
-  float temperatura = milivolts/10;
-  Serial.println("");
-  Serial.print("temperatura medida: ");
-  Serial.println(temperatura);
+  int value = analogRead(A0);
+  float milivolts = (value / 1024.0) * 3300;
+  float measuredTemperature = milivolts / 10;
+  return measuredTemperature;
 }
 
 // Mqtt protocol
@@ -94,19 +95,24 @@ void callback(char *topic, byte *payload, unsigned int length)
   {
     sinalIRManager.turnOnAirConditionerSignal();
     Serial.println("Ligando o ar-condicionado...");
-    delay(60000);
-    measureTemperature();
-    if (temperatura < tempExterna)
+    delay(DELAY_TO_TURN_ON_AIR_CONDITIONER);
+
+    float airConditionerTemperature = getAirConditionerTemperature();
+
+    Serial.print("Temperatura do ar-condicionado: ");
+    Serial.println(airConditionerTemperature);
+
+    if (airConditionerTemperature < outsideTemperature)
     {
       Serial.println("Ar ligado");
-      msgTemperatura[0] = {1};
-      client.publish("air-conditioner/1/temp", (byte*)msgTemperatura, strlen(msgTemperatura), retained);
-    } 
+      msgTemperature[0] = {1};
+      client.publish("air-conditioner/1/temp", (byte *)msgTemperature, strlen(msgTemperature), retained);
+    }
     else
     {
       Serial.print("Ar com defeito");
-      msgTemperatura[0] = {0};
-      client.publish("air-conditioner/1/temp", (byte*)msgTemperatura, strlen(msgTemperatura), retained);
+      msgTemperature[0] = {0};
+      client.publish("air-conditioner/1/temp", (byte *)msgTemperature, strlen(msgTemperature), retained);
     }
   }
   else if (command == TURN_OFF_COMMAND)
