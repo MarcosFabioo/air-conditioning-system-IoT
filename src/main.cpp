@@ -52,8 +52,6 @@ void reconnect()
   const char *willTopic = "esp/status";
   const char *willMessage = "OFF_LINE";
   boolean willRetain = true;
-  const char *message = "ON_LINE";
-  boolean retained = true;
   String clientId = "ESP8266Client01p";
 
   while (!client.connected())
@@ -107,14 +105,14 @@ void callback(char *topic, byte *payload, unsigned int length)
     {
       Serial.println("Ar ligado");
       msgTemperature[0] = {1};
-      client.publish("air-conditioner/1/temp", (byte *)msgTemperature, strlen(msgTemperature), retained);
     }
     else
     {
       Serial.print("Ar com defeito");
       msgTemperature[0] = {0};
-      client.publish("air-conditioner/1/temp", (byte *)msgTemperature, strlen(msgTemperature), retained);
     }
+
+    client.publish("air-conditioner/1/temp", (byte *)msgTemperature, strlen(msgTemperature), retained);
   }
   else if (command == TURN_OFF_COMMAND)
   {
