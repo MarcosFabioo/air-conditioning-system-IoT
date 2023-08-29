@@ -9,7 +9,13 @@ WifiManager wifiManager;
 SinalIRManager sinalIRManager;
 
 const char *SERVER_MQTT = "broker.hivemq.com";
-const char *SUBSCRIBED_TOPIC = "air-conditioner/1/state";
+const char *SUBSCRIBED_TOPIC_ACTION = "air-conditioner/1/state";
+const char *PUBLISH_TOPIC_TEMP = "air-conditioner/1/temp";
+
+char msgTemperatura[1];
+float temperatura;
+boolean retained = true;
+float tempExterna = 30;
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -54,9 +60,9 @@ void reconnect()
     {
       // client.publish("esp/status", (byte*)message, strlen(message),
       // retained);
-      client.subscribe(SUBSCRIBED_TOPIC);
+      client.subscribe(SUBSCRIBED_TOPIC_ACTION);
       Serial.print("Conectado e conectado ao tópico: ");
-      Serial.println(SUBSCRIBED_TOPIC);
+      Serial.println(SUBSCRIBED_TOPIC_ACTION);
     }
     else
     {
@@ -64,6 +70,16 @@ void reconnect()
       delay(5000);
     }
   }
+}
+
+void measureTemperature()
+{
+  int valorObtido = analogRead(A0);
+  float milivolts = (valorObtido/1024.0) * 3300; 
+  float temperatura = milivolts/10;
+  Serial.println("");
+  Serial.print("temperatura medida: ");
+  Serial.println(temperatura);
 }
 
 // Mqtt protocol
@@ -78,6 +94,20 @@ void callback(char *topic, byte *payload, unsigned int length)
   {
     sinalIRManager.turnOnAirConditionerSignal();
     Serial.println("Ligando o ar-condicionado...");
+    delay(60000);
+    measureTemperature();
+    if (temperatura < tempExterna)
+    {
+      Serial.println("Ar ligado");
+      msgTemperatura[0] = {1};
+      client.publish("air-conditioner/1/temp", (byte*)msgTemperatura, strlen(msgTemperatura), retained);
+    } 
+    else
+    {
+      Serial.print("Ar com defeito");
+      msgTemperatura[0] = {0};
+      client.publish("air-conditioner/1/temp", (byte*)msgTemperatura, strlen(msgTemperatura), retained);
+    }
   }
   else if (command == TURN_OFF_COMMAND)
   {
