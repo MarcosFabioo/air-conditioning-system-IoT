@@ -77,8 +77,8 @@ void reconnect()
 float getAirConditionerTemperature()
 {
   int value = analogRead(A0);
-  float milivolts = (value / 1024.0) * 3300;
-  float measuredTemperature = milivolts / 10;
+  float milivolts = (value * 0.375);
+  float measuredTemperature = milivolts;
   return measuredTemperature;
 }
 
