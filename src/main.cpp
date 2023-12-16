@@ -2,11 +2,14 @@
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 #include "WifiManager/WifiManager.h"
-#include "SinalIRManager/SinalIRManager.h"
 #include "PinConstants/PinConstants.cpp"
+#include "AirConditioners/ir.Midea.h"
 
 WifiManager wifiManager;
-SinalIRManager sinalIRManager;
+IrMidea irMidea;
+
+char TURN_ON_COMMAND = '1';
+char TURN_OFF_COMMAND = '0';
 
 const char *SERVER_MQTT = "broker.hivemq.com";
 const char *SUBSCRIBED_TOPIC = "air-conditioner/1/state";
@@ -72,17 +75,20 @@ void callback(char *topic, byte *payload, unsigned int length)
   displayMessageReceived(topic, payload, length);
   char command = (char)payload[0];
 
-  sinalIRManager.getIrrecvInstance().disableIRIn();
-
   if (command == TURN_ON_COMMAND)
   {
-    sinalIRManager.turnOnAirConditionerSignal();
+    irMidea.setOn();
     Serial.println("Ligando o ar-condicionado...");
   }
   else if (command == TURN_OFF_COMMAND)
   {
-    sinalIRManager.turnOffAirConditionerSignal();
+    irMidea.setOff();
     Serial.println("Desligando o ar-condicionado...");
+  }
+  else if (command != TURN_ON_COMMAND && command != TURN_OFF_COMMAND){
+    const uint8_t uintCommand = static_cast<const uint8_t>(command);
+    irMidea.setTemperature(uintCommand, true);
+    Serial.println("Mudando temperatura");
   }
 }
 
@@ -100,14 +106,6 @@ void loop()
     reconnect();
   }
   client.loop();
-
-  decode_results currentDecodedSignal;
-  if (sinalIRManager.getIrrecvInstance().decode(&currentDecodedSignal) &&
-      decodedSignalsTotal < MAX_DECODING_SIGNAL_ATTEMPTS)
-  {
-    sinalIRManager.receiveDecodeSignals(currentDecodedSignal);
-    decodedSignalsTotal++;
-  }
 }
 
 // Set up methods
@@ -118,5 +116,5 @@ void setup()
   wifiManager.connectToWiFi();
   setupMqtt();
   Serial.begin(PinConstants::kBaudRate);
-  sinalIRManager.setupSignalsDecoding();
+  irMidea.initialize();
 }
