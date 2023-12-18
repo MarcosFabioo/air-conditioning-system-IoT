@@ -1,7 +1,7 @@
 #include "WifiManager.h"
 
-const char *WIFI_SSID = "Consultorio";
-const char *WIFI_PASSWORD = "10203040";
+const char *WIFI_SSID = "iPhone de Marcos";
+const char *WIFI_PASSWORD = "22042005";
 
 void WifiManager::connectToWiFi()
 {

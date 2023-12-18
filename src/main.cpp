@@ -4,6 +4,7 @@
 #include "WifiManager/WifiManager.h"
 #include "PinConstants/PinConstants.cpp"
 #include "AirConditioners/ir.Midea.h"
+#include <ArduinoJson.h>
 
 WifiManager wifiManager;
 IrMidea irMidea;
@@ -73,23 +74,29 @@ void reconnect()
 void callback(char *topic, byte *payload, unsigned int length)
 {
   displayMessageReceived(topic, payload, length);
-  char command = (char)payload[0];
 
-  if (command == TURN_ON_COMMAND)
-  {
-    irMidea.setOn();
-    Serial.println("Ligando o ar-condicionado...");
-  }
-  else if (command == TURN_OFF_COMMAND)
-  {
-    irMidea.setOff();
-    Serial.println("Desligando o ar-condicionado...");
-  }
-  else if (command != TURN_ON_COMMAND && command != TURN_OFF_COMMAND){
-    const uint8_t uintCommand = static_cast<const uint8_t>(command);
-    irMidea.setTemperature(uintCommand);
-    Serial.println("Mudando temperatura");
-  }
+  DynamicJsonDocument doc(1024);
+  deserializeJson(doc, payload);
+  const int temperatura = doc["temperature"];
+
+  Serial.println(temperatura);
+
+  // if (command == TURN_ON_COMMAND)
+  // {
+  //   irMidea.setOn();
+  //   Serial.println("Ligando o ar-condicionado...");
+  // }
+  // else if (command == TURN_OFF_COMMAND)
+  // {
+  //   irMidea.setOff();
+  //   Serial.println("Desligando o ar-condicionado...");
+  // }
+  // else if (command != TURN_ON_COMMAND && command != TURN_OFF_COMMAND)
+  // {
+  //   const uint8_t uintCommand = static_cast<const uint8_t>(command);
+  //   irMidea.setTemperature(uintCommand);
+  //   Serial.println("Mudando temperatura");
+  // }
 }
 
 void setupMqtt()
