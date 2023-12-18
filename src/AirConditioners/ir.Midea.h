@@ -12,7 +12,7 @@ public:
   void initialize();  
   void setOn();
   void setOff();
-  void setTemperature(const uint8_t temp, const bool useCelsius);
+  void setTemperature(const uint8_t temp);
 
 private:
 };

@@ -23,7 +23,8 @@ void IrMidea::setOff(){
     #endif
 }
 
-void IrMidea::setTemperature(const uint8_t temp, const bool useCelsius){
+void IrMidea::setTemperature(const uint8_t temp){
+    bool useCelsius = true;
     ac.setTemp(temp, useCelsius);
     Serial.println(ac.toString());
     #if SEND_MIDEA

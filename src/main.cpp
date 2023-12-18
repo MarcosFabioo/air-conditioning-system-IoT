@@ -87,7 +87,7 @@ void callback(char *topic, byte *payload, unsigned int length)
   }
   else if (command != TURN_ON_COMMAND && command != TURN_OFF_COMMAND){
     const uint8_t uintCommand = static_cast<const uint8_t>(command);
-    irMidea.setTemperature(uintCommand, true);
+    irMidea.setTemperature(uintCommand);
     Serial.println("Mudando temperatura");
   }
 }
