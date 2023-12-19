@@ -5,6 +5,7 @@
 #include "PinConstants/PinConstants.cpp"
 #include "AirConditioners/ir.Midea.h"
 #include <ArduinoJson.h>
+#include <iostream>
 
 WifiManager wifiManager;
 IrMidea irMidea;
@@ -13,7 +14,10 @@ char TURN_ON_COMMAND = '1';
 char TURN_OFF_COMMAND = '0';
 
 const char *SERVER_MQTT = "broker.hivemq.com";
-const char *SUBSCRIBED_TOPIC = "air-conditioner/1/state";
+
+// É necessário usar "std::string" para fazer a concatenação de string com o id
+// passado durante a criação do ar-condicionado
+std::string SUBSCRIBED_TOPIC = "air-conditioner/1/state";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -58,9 +62,14 @@ void reconnect()
     {
       // client.publish("esp/status", (byte*)message, strlen(message),
       // retained);
-      client.subscribe(SUBSCRIBED_TOPIC);
+      //
+
+      // É necessário converter para const char* para utilizar o método
+      // A conversão é feita com o método .c_str()
+      const char *subscribed_topic_ptr = SUBSCRIBED_TOPIC.c_str();
+      client.subscribe(subscribed_topic_ptr);
       Serial.print("Conectado e conectado ao tópico: ");
-      Serial.println(SUBSCRIBED_TOPIC);
+      Serial.println(subscribed_topic_ptr);
     }
     else
     {
@@ -70,6 +79,33 @@ void reconnect()
   }
 }
 
+void handleChangeState(DynamicJsonDocument &doc)
+{
+  String state = doc["data"]["state"];
+
+  // TODO: Lidar com diferentes protocolos
+  // O ar-condicionado aqui está "hardcoded"
+  if (state == "on")
+  {
+    irMidea.setOn();
+  }
+  else if (state == "off")
+  {
+    irMidea.setOff();
+  }
+}
+
+void handleCreateAirConditioner(DynamicJsonDocument &doc)
+{
+  int air_conditioner_id = doc["data"]["id"];
+  String protocol = doc["data"]["protocol"];
+
+  // TODO: Lidar com subtópicos: create, state, temperature...
+  // Dá pra utilizar wildcards
+  // https://www.hivemq.com/blog/mqtt-essentials-part-5-mqtt-topics-best-practices/
+  SUBSCRIBED_TOPIC = "air-conditioners/" + std::to_string(air_conditioner_id);
+}
+
 // Mqtt protocol
 void callback(char *topic, byte *payload, unsigned int length)
 {
@@ -77,26 +113,22 @@ void callback(char *topic, byte *payload, unsigned int length)
 
   DynamicJsonDocument doc(1024);
   deserializeJson(doc, payload);
-  const int temperatura = doc["temperature"];
 
-  Serial.println(temperatura);
+  String action = doc["action"];
 
-  // if (command == TURN_ON_COMMAND)
-  // {
-  //   irMidea.setOn();
-  //   Serial.println("Ligando o ar-condicionado...");
-  // }
-  // else if (command == TURN_OFF_COMMAND)
-  // {
-  //   irMidea.setOff();
-  //   Serial.println("Desligando o ar-condicionado...");
-  // }
-  // else if (command != TURN_ON_COMMAND && command != TURN_OFF_COMMAND)
-  // {
-  //   const uint8_t uintCommand = static_cast<const uint8_t>(command);
-  //   irMidea.setTemperature(uintCommand);
-  //   Serial.println("Mudando temperatura");
-  // }
+  if (action == "create")
+  {
+    handleCreateAirConditioner(doc);
+  }
+  else if (action == "change-temperature")
+  {
+    int temperature_in_celsius = doc["data"]["temperature"];
+    Serial.println(temperature_in_celsius);
+  }
+  else if (action == "change-state")
+  {
+    handleChangeState(doc);
+  }
 }
 
 void setupMqtt()
