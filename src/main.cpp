@@ -3,12 +3,12 @@
 #include <PubSubClient.h>
 #include "WifiManager/WifiManager.h"
 #include "PinConstants/PinConstants.cpp"
-#include "AirConditioners/ir.Midea.h"
+#include "AirConditioners/irMideaProtocol.h"
 #include <ArduinoJson.h>
 #include <iostream>
 
 WifiManager wifiManager;
-IrMidea irMidea;
+IrMideaProtocol irMidea;
 
 char TURN_ON_COMMAND = '1';
 char TURN_OFF_COMMAND = '0';
@@ -79,19 +79,35 @@ void reconnect()
   }
 }
 
+// Perceba que retorna um IrBaseProtocol
+// Isso é possível porque IrMideaProtocol herda de IrBaseProtocol
+IrBaseProtocol *getProtocol(String protocol)
+{
+  if (protocol == "midea")
+  {
+    IrMideaProtocol *irMideaProtocol = new IrMideaProtocol();
+    return irMideaProtocol;
+  }
+  else
+  {
+    return NULL;
+  }
+}
+
 void handleChangeState(DynamicJsonDocument &doc)
 {
   String state = doc["data"]["state"];
+  String protocol = doc["data"]["protocol"];
 
-  // TODO: Lidar com diferentes protocolos
-  // O ar-condicionado aqui está "hardcoded"
+  IrBaseProtocol *irProtocol = getProtocol(protocol);
+
   if (state == "on")
   {
-    irMidea.setOn();
+    irProtocol->setOn();
   }
   else if (state == "off")
   {
-    irMidea.setOff();
+    irProtocol->setOff();
   }
 }
 
