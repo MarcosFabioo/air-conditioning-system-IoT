@@ -5,7 +5,6 @@
 #include "PinConstants/PinConstants.cpp"
 #include "AirConditioners/irMideaProtocol.h"
 #include <ArduinoJson.h>
-#include <iostream>
 
 WifiManager wifiManager;
 IrMideaProtocol irMidea;
@@ -15,9 +14,7 @@ char TURN_OFF_COMMAND = '0';
 
 const char *SERVER_MQTT = "broker.hivemq.com";
 
-// É necessário usar "std::string" para fazer a concatenação de string com o id
-// passado durante a criação do ar-condicionado
-std::string SUBSCRIBED_TOPIC = "air-conditioner/1/state";
+String SUBSCRIBED_TOPIC = "";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -119,7 +116,7 @@ void handleCreateAirConditioner(DynamicJsonDocument &doc)
   // TODO: Lidar com subtópicos: create, state, temperature...
   // Dá pra utilizar wildcards
   // https://www.hivemq.com/blog/mqtt-essentials-part-5-mqtt-topics-best-practices/
-  SUBSCRIBED_TOPIC = "air-conditioners/" + std::to_string(air_conditioner_id);
+  SUBSCRIBED_TOPIC = "air-conditioners/" + String(air_conditioner_id);
 }
 
 // Mqtt protocol
