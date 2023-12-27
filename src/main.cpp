@@ -7,7 +7,6 @@
 #include <ArduinoJson.h>
 
 WifiManager wifiManager;
-IrMideaProtocol irMidea;
 
 char TURN_ON_COMMAND = '1';
 char TURN_OFF_COMMAND = '0';
@@ -52,26 +51,17 @@ void reconnect()
 
   while (!client.connected())
   {
-    Serial.print("Tentando estabelecer conexão MQTT...");
-
     if (client.connect(clientId.c_str(), willTopic, willQoS, willRetain,
                        willMessage))
     {
-      // client.publish("esp/status", (byte*)message, strlen(message),
-      // retained);
-      //
 
-      // É necessário converter para const char* para utilizar o método
-      // A conversão é feita com o método .c_str()
-      const char *subscribed_topic_ptr = SUBSCRIBED_TOPIC.c_str();
-      client.subscribe(subscribed_topic_ptr);
-      Serial.print("Conectado e conectado ao tópico: ");
-      Serial.println(subscribed_topic_ptr);
+      client.subscribe("air-conditioners/create");
+      Serial.println("Tópico ainda não foi definido, crie um ar-condicionado via tópico");
     }
     else
     {
       displayMqttNotConnected();
-      delay(5000);
+      delay(1500);
     }
   }
 }
@@ -117,6 +107,10 @@ void handleCreateAirConditioner(DynamicJsonDocument &doc)
   // Dá pra utilizar wildcards
   // https://www.hivemq.com/blog/mqtt-essentials-part-5-mqtt-topics-best-practices/
   SUBSCRIBED_TOPIC = "air-conditioners/" + String(air_conditioner_id);
+  const char *subscribed_topic_ptr = SUBSCRIBED_TOPIC.c_str();
+  client.subscribe(subscribed_topic_ptr);
+  Serial.print("Conectado ao tópico: ");
+  Serial.println(subscribed_topic_ptr);
 }
 
 // Mqtt protocol
@@ -168,5 +162,4 @@ void setup()
   wifiManager.connectToWiFi();
   setupMqtt();
   Serial.begin(PinConstants::kBaudRate);
-  irMidea.initialize();
 }
