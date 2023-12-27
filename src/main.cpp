@@ -4,10 +4,11 @@
 #include "WifiManager/WifiManager.h"
 #include "PinConstants/PinConstants.cpp"
 #include "AirConditioners/irMideaProtocol.h"
+#include "AirConditioners/irTecoProtocol.h"
 #include <ArduinoJson.h>
 
 WifiManager wifiManager;
-IrMideaProtocol irMidea;
+// IrMideaProtocol irMidea;
 
 char TURN_ON_COMMAND = '1';
 char TURN_OFF_COMMAND = '0';
@@ -15,6 +16,7 @@ char TURN_OFF_COMMAND = '0';
 const char *SERVER_MQTT = "broker.hivemq.com";
 
 String SUBSCRIBED_TOPIC = "";
+String AIR_CONDITIONER_TOPIC = "";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -33,15 +35,10 @@ void displayMessageReceived(char *topic, byte *payload, unsigned int length)
   Serial.println();
 }
 
-void displayMqttNotConnected()
-{
-  Serial.print("Não foi possível se conectar. Estado do esp: ");
-  Serial.print(client.state());
-  Serial.println("Tentando novamente em 5 segundos");
-}
-
 void reconnect()
 {
+  wifiManager.connectToWiFi();
+
   byte willQoS = 0;
   const char *willTopic = "esp/status";
   const char *willMessage = "OFF_LINE";
@@ -63,15 +60,19 @@ void reconnect()
 
       // É necessário converter para const char* para utilizar o método
       // A conversão é feita com o método .c_str()
-      const char *subscribed_topic_ptr = SUBSCRIBED_TOPIC.c_str();
-      client.subscribe(subscribed_topic_ptr);
-      Serial.print("Conectado e conectado ao tópico: ");
-      Serial.println(subscribed_topic_ptr);
+      client.subscribe("air-conditioners/create");
+
+      if (AIR_CONDITIONER_TOPIC != "")
+      {
+        const char *air_conditioner_topic_ptr = AIR_CONDITIONER_TOPIC.c_str();
+        client.subscribe(air_conditioner_topic_ptr);
+        Serial.print("Conectado e conectado ao tópico: ");
+        Serial.println(air_conditioner_topic_ptr);
+      }
     }
     else
     {
-      displayMqttNotConnected();
-      delay(5000);
+      Serial.println("Protocolo MQTT não foi conectado");
     }
   }
 }
@@ -83,7 +84,14 @@ IrBaseProtocol *getProtocol(String protocol)
   if (protocol == "midea")
   {
     IrMideaProtocol *irMideaProtocol = new IrMideaProtocol();
+    irMideaProtocol->initialize();
     return irMideaProtocol;
+  }
+  else if (protocol == "teco")
+  {
+    IrTecoProtocol *irTecoProtocol = new IrTecoProtocol();
+    irTecoProtocol->initialize();
+    return irTecoProtocol;
   }
   else
   {
@@ -95,7 +103,6 @@ void handleChangeState(DynamicJsonDocument &doc)
 {
   String state = doc["data"]["state"];
   String protocol = doc["data"]["protocol"];
-
   IrBaseProtocol *irProtocol = getProtocol(protocol);
 
   if (state == "on")
@@ -111,12 +118,13 @@ void handleChangeState(DynamicJsonDocument &doc)
 void handleCreateAirConditioner(DynamicJsonDocument &doc)
 {
   int air_conditioner_id = doc["data"]["id"];
-  String protocol = doc["data"]["protocol"];
+  // String protocol = doc["data"]["protocol"];
 
   // TODO: Lidar com subtópicos: create, state, temperature...
   // Dá pra utilizar wildcards
   // https://www.hivemq.com/blog/mqtt-essentials-part-5-mqtt-topics-best-practices/
-  SUBSCRIBED_TOPIC = "air-conditioners/" + String(air_conditioner_id);
+  AIR_CONDITIONER_TOPIC = "air-conditioners/" + String(air_conditioner_id);
+  Serial.println(AIR_CONDITIONER_TOPIC);
 }
 
 // Mqtt protocol
@@ -164,9 +172,7 @@ void loop()
 void setup()
 {
   Serial.begin(115200);
-  Serial.println(WiFi.macAddress());
   wifiManager.connectToWiFi();
-  setupMqtt();
+  // setupMqtt();
   Serial.begin(PinConstants::kBaudRate);
-  irMidea.initialize();
 }

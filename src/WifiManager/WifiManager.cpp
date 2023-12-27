@@ -1,12 +1,12 @@
 #include "WifiManager.h"
 
-const char *WIFI_SSID = "iPhone de Marcos";
-const char *WIFI_PASSWORD = "22042005";
+const char *WIFI_SSID = "wIFRN-IoT";
+const char *WIFI_PASSWORD = "deviceiotifrn";
 
 void WifiManager::connectToWiFi()
 {
-  unsigned long startTime = millis();
   bool connecting = true;
+  const int DELAY_TO_RECONNECT_IN_MS = 1000; // 1 second
 
   displayWifiConnecting();
 
@@ -20,13 +20,13 @@ void WifiManager::connectToWiFi()
       connecting = false;
     }
 
-    if (millis() - startTime >= 10 * 1000) // 10 seconds
+    delay(DELAY_TO_RECONNECT_IN_MS);
+
+    if (WiFi.status() != WL_CONNECTED)
     {
       connecting = false;
       Serial.println("Falha ao conectar na rede WiFi");
     }
-
-    delay(100); // Avoid spamming WiFi network
   }
 
   displayWifiSuccess();

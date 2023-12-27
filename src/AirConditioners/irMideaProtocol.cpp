@@ -4,29 +4,29 @@
 #define SEND_MIDEA true
 
 const uint16_t kIrLed = 4;
-IRMideaAC ac(kIrLed);
+IRMideaAC irMideaAc(kIrLed);
 
 void IrMideaProtocol::initialize()
 {
-  ac.begin();
-  ac.setUseCelsius(true);
+  irMideaAc.begin();
+  irMideaAc.setUseCelsius(true);
 }
 
 void IrMideaProtocol::setOn()
 {
   Serial.println("Ligando o ar condicionado");
-  ac.on();
+  irMideaAc.on();
 #if SEND_MIDEA
-  ac.send();
+  irMideaAc.send();
 #endif
 }
 
 void IrMideaProtocol::setOff()
 {
   Serial.println("Desligando o ar condicionado");
-  ac.off();
+  irMideaAc.off();
 #if SEND_MIDEA
-  ac.send();
+  irMideaAc.send();
 #endif
 }
 
@@ -36,6 +36,6 @@ void IrMideaProtocol::setTemperature(const uint8_t temp)
   Serial.print(temp);
 
   bool useCelsius = true;
-  ac.setTemp(temp, useCelsius);
-  Serial.println(ac.toString());
+  irMideaAc.setTemp(temp, useCelsius);
+  Serial.println(irMideaAc.toString());
 }
