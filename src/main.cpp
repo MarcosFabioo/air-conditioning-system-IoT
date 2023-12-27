@@ -4,6 +4,7 @@
 #include "WifiManager/WifiManager.h"
 #include "PinConstants/PinConstants.cpp"
 #include "AirConditioners/irMideaProtocol.h"
+#include "AirConditioners/irTecoProtocol.h"
 #include <ArduinoJson.h>
 
 WifiManager wifiManager;
@@ -73,12 +74,16 @@ IrBaseProtocol *getProtocol(String protocol)
   if (protocol == "midea")
   {
     IrMideaProtocol *irMideaProtocol = new IrMideaProtocol();
+    irMideaProtocol->initialize();
     return irMideaProtocol;
   }
-  else
+  else if (protocol == "teco")
   {
-    return NULL;
+    IrTecoProtocol *irTecoProtocol = new IrTecoProtocol();
+    irTecoProtocol->initialize();
+    return irTecoProtocol;
   }
+  return NULL;
 }
 
 void handleChangeState(DynamicJsonDocument &doc)
