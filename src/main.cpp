@@ -18,6 +18,7 @@ String SUBSCRIBED_TOPIC = "";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
+IrBaseProtocol *irProtocol = NULL;
 
 void displayMessageReceived(char *topic, byte *payload, unsigned int length)
 {
@@ -69,29 +70,28 @@ void reconnect()
 
 // Perceba que retorna um IrBaseProtocol
 // Isso é possível porque IrMideaProtocol herda de IrBaseProtocol
-IrBaseProtocol *getProtocol(String protocol)
+void setProtocol(String protocol)
 {
   if (protocol == "midea")
   {
-    IrMideaProtocol *irMideaProtocol = new IrMideaProtocol();
-    irMideaProtocol->initialize();
-    return irMideaProtocol;
+    irProtocol = new IrMideaProtocol();
   }
   else if (protocol == "teco")
   {
-    IrTecoProtocol *irTecoProtocol = new IrTecoProtocol();
-    irTecoProtocol->initialize();
-    return irTecoProtocol;
+    irProtocol = new IrTecoProtocol();
   }
-  return NULL;
+  else
+  {
+    return;
+  }
+
+  irProtocol->initialize();
 }
 
 void handleChangeState(DynamicJsonDocument &doc)
 {
   String state = doc["data"]["state"];
   String protocol = doc["data"]["protocol"];
-
-  IrBaseProtocol *irProtocol = getProtocol(protocol);
 
   if (state == "on")
   {
@@ -116,6 +116,8 @@ void handleCreateAirConditioner(DynamicJsonDocument &doc)
   client.subscribe(subscribed_topic_ptr);
   Serial.print("Conectado ao tópico: ");
   Serial.println(subscribed_topic_ptr);
+
+  setProtocol(protocol);
 }
 
 // Mqtt protocol
