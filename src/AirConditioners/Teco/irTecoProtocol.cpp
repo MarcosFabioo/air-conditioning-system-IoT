@@ -1,4 +1,4 @@
-#include <AirConditioners/irTecoProtocol.h>
+#include <AirConditioners/Teco/irTecoProtocol.h>
 #include <Arduino.h>
 
 #define SEND_TECO true

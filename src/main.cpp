@@ -3,8 +3,8 @@
 #include <PubSubClient.h>
 #include "WifiManager/WifiManager.h"
 #include "PinConstants/PinConstants.cpp"
-#include "AirConditioners/irMideaProtocol.h"
-#include "AirConditioners/irTecoProtocol.h"
+#include "AirConditioners/Midea/irMideaProtocol.h"
+#include "AirConditioners/Teco/irTecoProtocol.h"
 #include <ArduinoJson.h>
 
 WifiManager wifiManager;

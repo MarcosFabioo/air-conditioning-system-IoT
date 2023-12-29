@@ -1,4 +1,4 @@
-#include <AirConditioners/irMideaProtocol.h>
+#include <AirConditioners/Midea/irMideaProtocol.h>
 #include <Arduino.h>
 
 #define SEND_MIDEA true
